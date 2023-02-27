@@ -1,3 +1,5 @@
+const Task = require("../models/task");
+
 const getTasks = (req, res) => {
     res.send("Task Manager for all");
 }
