@@ -1,21 +1,18 @@
 const Task = require("../models/task");
-
-const getTasks = async(req, res) => {
-    try {
+const asyncwrapper=require("../middleware/async");
+const getTasks = asyncwrapper(async(req, res) => {
         const tasks = await Task.find({});
         res.status(200).json({ tasks });
-    }
-    catch (error) {
-        res.status(500).json({ "msg": error })
-    }
-}
+})
 
-const createTask = async (req, res) => {
-    try {
-        const name=req.body.name;
+const createTask = asyncwrapper(async (req, res) => {
+        const name = req.body.name;
+        if (!name) {
+            return res.status(400).json({ "msg": "Please provide a name" });
+        }
         const task = await Task.find({ name }, async(err, task) => {
             if (err) {
-                console.log(err);
+                res.status(400).json({ "msg": "Task already exists" });
             }
             else {
                 if (task.length > 0) {
@@ -27,12 +24,7 @@ const createTask = async (req, res) => {
                 }
             }
         });
-    }
-    catch (error) {
-        res.status(500).json({"msg":error.message})
-    }
-    
-}
+})
 
 const getTask = async(req, res) => {
     try {
@@ -48,8 +40,18 @@ const getTask = async(req, res) => {
     }
 }
 
-const updateTask = (req, res) => {
-    
+const updateTask = async(req, res) => {
+    try{
+        const { id: taskID } = req.params;
+        const task = await Task.findOneAndUpdate({ _id: taskID }, req.body, { new: true, runValidators: true })
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+        res.status(200).json({task});
+    }
+    catch (error) {
+        res.status(500).json({ "msg": error.message })
+    }
 
     // res.send("Task Manager for update");
 }

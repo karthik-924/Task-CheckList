@@ -3,14 +3,16 @@ const app = express();
 const tasks = require("./routes/tasks");
 const connectDB = require("./db/connect");
 require("dotenv").config();
-
+const notFound = require("./middleware/not-found");
+const errorHandling=require("./middleware/error-handler");
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static("./public"));
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/tasks/v1", tasks);
-
-const port = 5000;
+app.use(notFound);
+app.use(errorHandling);
+const port = process.env.PORT || 5000;
 
 const start = async () => {
   try {
